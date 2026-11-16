@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum AccountType {
+  WALLET
+  CHECKING
+  SAVINGS
+  INVESTMENT
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+}
+
+enum InvoiceStatus {
+  OPEN
+  CLOSED
+  PAID
+}
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
+  passwordHash String
+  pinHash      String
+  createAt     DateTime @default(now())
+}
+
+model Account {
+  id      String       @id @default(auto()) @map("_id") @db.ObjectId
+  name    String
+  type    AccountType 
+  balance Float        @default(0)
+
+  transactions         Transaction[] @relation("OriginAccount")
+  transferDestinations Transaction[] @relation("DestinationAccount")
+}
+
+model CreditCard {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  limit      Float
+  closingDay Int
+  dueDay     Int
+  invoices   Invoice[]
+}
+
+model Invoice {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  month       Int
+  year        Int
+  status      InvoiceStatus @default(OPEN)
+  totalAmount Float         @default(0)
+
+  creditCardId String        @db.ObjectId
+  creditCard   CreditCard    @relation(fields: [creditCardId], references: [id])
+  transactions Transaction[]
+
+  @@unique([creditCardId, month, year])
+}
+
+model Transaction {
+  id          Script          @id @default(auto()) @map("_id") @db.ObjectId
+  description Script
+  amount      Float
+  type        TransactionType
+  category    String
+  date        DateTime        @default(now())
+
+  isInstallment      Boolean @default(false)
+  installmentNumber  Int?
+  totalInstallments  Int?
+  installmentGroupId String?
+
+  accountId String?  @db.ObjectId
+  account   Account? @relation("OriginAccount", fields: [accountId], references: [id])
+
+  destinationAccountId String?  @db.ObjectId
+  destinationAccount   Account? @relation("DestinationAccount", fields: [destinationAccountId], references: [id])
+
+  invoiceId String?  @db.ObjectId
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id]) 
+}
+
+type PricePoint {
+  price Float
+  date  DateTime @default(now())
+}
+
+model WishlistItem {
+  id                        @id @default(auto()) @map("_id") @db.ObjectId
+  name
+  targetAmount Float
+  priority     Int          @default(1)
+  priceHistory PricePoint[]
+  createdAt    DateTime     @default(now())
+}

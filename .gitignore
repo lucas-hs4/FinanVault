@@ -1,0 +1,6 @@
+GEMINI.md
+dados_mongo/
+node_modules/
+.env
+dist/
+*.log
