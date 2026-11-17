@@ -37,7 +37,7 @@ model User {
   name         String
   passwordHash String
   pinHash      String
-  createAt     DateTime @default(now())
+  createdAt     DateTime @default(now())
 }
 
 model Account {
@@ -74,8 +74,8 @@ model Invoice {
 }
 
 model Transaction {
-  id          Script          @id @default(auto()) @map("_id") @db.ObjectId
-  description Script
+  id          String          @id @default(auto()) @map("_id") @db.ObjectId
+  description String
   amount      Float
   type        TransactionType
   category    String
@@ -102,8 +102,8 @@ type PricePoint {
 }
 
 model WishlistItem {
-  id                        @id @default(auto()) @map("_id") @db.ObjectId
-  name
+  id           String       @id @default(auto()) @map("_id") @db.ObjectId
+  name         String
   targetAmount Float
   priority     Int          @default(1)
   priceHistory PricePoint[]
