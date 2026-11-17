@@ -1,7 +1,15 @@
 import 'dotenv/config';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
+import cookie from '@fastify/cookie';
+import jwt from '@fastify/jwt';
 import { prisma } from './lib/prisma.js';
+import { authRoutes } from './routes/auth.js';
+
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret) {
+  throw new Error('JWT_SECRET não configurado no .env');
+}
 
 const app = Fastify({ logger: true});
 
@@ -9,6 +17,21 @@ app.register(cors, {
   origin: true,
   credentials: true,
 });
+
+app.register(cookie);
+
+app.register(jwt, {
+  secret: jwtSecret,
+  cookie: {
+    cookieName: 'finanvault_token',
+    signed: false,
+  },
+  sign: {
+    expiresIn: '15m',
+  },
+});
+
+app.register(authRoutes, { prefix: '/api/auth' });
 
 app.get('/api/status', async () => {
   const totalContas = await prisma.account.count()
