@@ -5,6 +5,8 @@ import cookie from '@fastify/cookie';
 import jwt from '@fastify/jwt';
 import { prisma } from './lib/prisma.js';
 import { authRoutes } from './routes/auth.js';
+import { accountRoutes } from './routes/accounts.js';
+import { transactionRoutes } from './routes/transactions.js';
 
 const jwtSecret = process.env.JWT_SECRET;
 if (!jwtSecret) {
@@ -32,6 +34,10 @@ app.register(jwt, {
 });
 
 app.register(authRoutes, { prefix: '/api/auth' });
+
+app.register(accountRoutes, { prefix: '/api/accounts' });
+
+app.register(transactionRoutes, { prefix: '/api/transactions' });
 
 app.get('/api/status', async () => {
   const totalContas = await prisma.account.count()
